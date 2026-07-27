@@ -1,0 +1,115 @@
+# ═══════════════════════════════════════════════════════════════════════
+# settings.yaml — Configuration métier de TerminalAutomation.
+#
+# Ce fichier remplace les constantes auparavant codées en dur dans
+# config.py. Il peut être modifié sans toucher au code Python (chemins,
+# motifs de détection, mapping de colonnes/cellules, seuils de
+# validation, informations terminal).
+#
+# Toute clé absente ici retombe sur une valeur par défaut définie dans
+# src/settings_loader.py, pour rester compatible si ce fichier est
+# partiellement édité.
+# ═══════════════════════════════════════════════════════════════════════
+
+paths:
+  data_dir: "data"
+  input_dir: "data/input"
+  template_dir: "data/template"
+  output_dir: "data/output"
+  archive_dir: "data/archive"
+  logs_dir: "logs"
+  log_file: "logs/application.log"
+  database_file: "data/history.db"
+  template_filename: "TPFREP 0XP93W1MA_BELITAKI.xlsx"
+  output_report_filename: "TPFREP_FINAL.xlsx"
+  output_dashboard_filename: "DASHBOARD.xlsx"
+
+# Motifs de noms de fichiers (insensibles à la casse) — utilisés en
+# secours uniquement, la détection principale se fait par contenu.
+file_detection:
+  shift_filename_patterns:
+    1: "rapport\\s+de\\s+1\\s+shift"
+    2: "rapport\\s+de\\s+2\\s+shift"
+    3: "rapport\\s+de\\s+3\\s+shift"
+  import_masteryd_pattern: "import\\s+masteryd"
+  export_masteryd_pattern: "export\\s+masteryd"
+  blue_cell_template_threshold: 100
+
+vessel:
+  target_name: "BELITAKI"
+  target_normalized: "BELITAKI"
+
+# Informations propres au terminal/à l'escale — absentes des fichiers
+# sources, à ajuster si le terminal, le port ou le navire changent.
+terminal:
+  vessel_port_unlocode: "MACAS"
+  terminal_code: "SOMAPORT"
+  voyage_import: "0XP93W1MA"
+  voyage_export: "0XP93W1MA"
+  vessel_imo_default: "-"
+  vessel_call_sign_default: "-"
+
+
+cranes:
+  crane_ids: ["P1", "P2", "P3", "P4"]
+  # Colonne du template (0-indexed) pour chaque grue.
+  template_column:
+    P1: 4
+    P2: 5
+    P4: 6
+    P3: 7
+
+# Colonnes (0-indexed) des rapports de shift réels (table par grue).
+shift_columns:
+  crane_id: 0
+  vessel: 1
+  import_moves: 3
+  export_moves: 4
+  doc: 5
+  foc: 6
+  observations: 7
+
+# Couleur bleue du template TPFREP — cellules autorisées à l'écriture.
+template_color:
+  blue_indexed: 44
+  # Couleur RVB équivalente produite quand le template .xls est converti
+  # en .xlsx via LibreOffice (indexed=44 -> rgb=FF99CCFF à la conversion).
+  blue_rgb_fallback: "FF99CCFF"
+
+# Positions des sections du template (0-indexed sauf mention contraire).
+template_layout:
+  max_sessions_per_crane: 8
+  session_rows:
+    - [37, 38]
+    - [40, 41]
+    - [43, 44]
+    - [46, 47]
+    - [49, 50]
+    - [52, 53]
+    - [55, 56]
+    - [58, 59]
+  total_moves_per_crane_row: 64
+  general_delay_rows: [26, 27, 28, 29]
+  restow_common_row: 202
+  hatch_cover_row: 232
+  discharged_start_row: 127
+  loaded_deepsea_start_row: 158
+  max_operators: 10
+
+validation:
+  max_reasonable_session_hours: 20
+  min_valid_year: 2020
+  max_valid_year: 2035
+  shift_date_margin_days: 1
+  required_masteryd_columns:
+    - "Nø CONTENEUR"
+    - "CODE MVT"
+    - "EXP IMP TRB"
+    - "V/P"
+    - "TYPE ISO"
+    - "TAG FRIGO"
+    - "TAG DANG 0/1"
+    - "TAG HG 0/1"
+    - "EXPLOITANT EN COURS"
+    - "ESCALE"
+    - "DATE DE SAISIE"

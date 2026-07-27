@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest cache
+.pytest_cache/
+pytest_out.txt
+
+# Output logs and temporary files
+logs/*.log
+output*.txt
+scratch_*.xlsx
+
+# Local data archives and generated outputs
+data/archive/
+data/output/*.xlsx
+!data/output/.gitkeep
+!data/input/.gitkeep
+!data/template/.gitkeep
+
+# Streamlit local settings
+.streamlit/secrets.toml
+
+# Virtual Environment
+.venv/
+venv/
+ENV/

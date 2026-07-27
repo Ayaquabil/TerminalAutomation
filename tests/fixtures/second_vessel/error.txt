@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\ayaqu\Desktop\testbeltaki\TerminalAutomation\src\pipeline_runner.py", line 163, in run_full_pipeline
+    tpfrep_path = generate_tpfrep_report(merged, kpi, template_path=inputs.template_path)
+  File "C:\Users\ayaqu\Desktop\testbeltaki\TerminalAutomation\src\report_generator.py", line 1437, in generate_tpfrep_report
+    fill_identification_section(writer, merged, kpi)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ayaqu\Desktop\testbeltaki\TerminalAutomation\src\report_generator.py", line 766, in fill_identification_section
+    writer.write_near_anchor_synonyms(
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'TPFREPWriter' object has no attribute 'write_near_anchor_synonyms'

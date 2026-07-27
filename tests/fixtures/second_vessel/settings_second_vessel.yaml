@@ -1,0 +1,85 @@
+paths:
+  data_dir: "tests/fixtures/second_vessel"
+  input_dir: "tests/fixtures/second_vessel"
+  template_dir: "tests/fixtures/second_vessel"
+  output_dir: "tests/fixtures/second_vessel/output"
+  archive_dir: "tests/fixtures/second_vessel/archive"
+  template_filename: "template.xlsx"
+  output_report_filename: "TPFREP_FINAL.xlsx"
+  output_dashboard_filename: "DASHBOARD.xlsx"
+  database_file: "tests/fixtures/second_vessel/history.db"
+  logs_dir: "tests/fixtures/second_vessel/logs"
+  log_file: "tests/fixtures/second_vessel/logs/application.log"
+
+file_detection:
+  shift_filename_patterns:
+    1: "shift_1"
+    2: "shift_2"
+    3: "shift_3"
+  import_masteryd_pattern: "import_masteryd"
+  export_masteryd_pattern: "export_masteryd"
+  blue_cell_template_threshold: 5
+
+vessel:
+  target_name: "NORDIC AURORA"
+  target_normalized: "NORDICAURORA"
+
+terminal:
+  vessel_port_unlocode: "GBHUL"
+  terminal_code: "NHVTERMINAL"
+  voyage_import: "7VK12X4AB"
+  voyage_export: "7VK12X4AB"
+  vessel_imo_default: "-"
+  vessel_call_sign_default: "-"
+
+cranes:
+  crane_ids: ["G1", "G2", "G3"]
+  template_column:
+    G1: 4
+    G2: 5
+    G3: 6
+
+shift_columns:
+  crane_id: 0
+  vessel: 1
+  import_moves: 3
+  export_moves: 4
+  doc: 5
+  foc: 6
+  observations: 7
+
+template_color:
+  blue_indexed: 44
+  blue_rgb_fallback: "FF99CCFF"
+
+template_layout:
+  max_sessions_per_crane: 8
+  session_rows:
+    - [36, 37]
+    - [39, 40]
+    - [42, 43]
+    - [45, 46]
+    - [48, 49]
+    - [51, 52]
+    - [54, 55]
+    - [57, 58]
+  total_moves_per_crane_row: 64
+  general_delay_rows: [25, 26, 27, 28]
+  restow_common_row: 202
+  hatch_cover_row: 232
+  discharged_start_row: 126
+  loaded_deepsea_start_row: 157
+  max_operators: 10
+
+validation:
+  max_reasonable_session_hours: 20
+  min_valid_year: 2020
+  max_valid_year: 2035
+  required_masteryd_columns:
+    - "Nø CONTENEUR"
+    - "CODE MVT"
+    - "EXP IMP TRB"
+    - "V/P"
+    - "TYPE ISO"
+    - "EXPLOITANT EN COURS"
+    - "ESCALE"
