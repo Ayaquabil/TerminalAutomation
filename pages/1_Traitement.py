@@ -55,19 +55,19 @@ with tab_pipeline:
     with col_u1:
         st_files = st.file_uploader(
             "📂 Chargement des fichiers d'entrée (Shifts + Rapports IMPORT/EXPORT)",
-            type=["xlsx", "xls"],
+            type=["xlsx"],
             accept_multiple_files=True,
             key="all_input_files",
-            help="Glissez-déposez ici les rapports de shift et les rapports IMPORT/EXPORT."
+            help="Glissez-déposez ici les rapports de shift et les rapports IMPORT/EXPORT (.xlsx)."
         )
 
     with col_u2:
         template_file = st.file_uploader(
             "📋 Template TPFREP officiel",
-            type=["xlsx", "xls"],
+            type=["xlsx"],
             accept_multiple_files=False,
             key="template_file",
-            help="Glissez-déposez le template TPFREP vierge contenant les macros et styles SOMAPORT."
+            help="Glissez-déposez le template TPFREP vierge contenant les macros et styles SOMAPORT (.xlsx)."
         )
 
     all_input_files = list(st_files or [])
@@ -231,51 +231,12 @@ with tab_pipeline:
         config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         return skipped
 
-    def _convert_xls_to_xlsx(xls_path: Path) -> Path:
-        import shutil as _shutil
-        converted = xls_path.with_suffix(".xlsx")
-        
-        # 1. Option LibreOffice / soffice si disponible
-        exe = next((c for c in ("libreoffice", "soffice") if _shutil.which(c)), None)
-        if exe:
-            try:
-                result = subprocess.run(
-                    [exe, "--headless", "--norestore", "--convert-to", "xlsx", "--outdir", str(xls_path.parent), str(xls_path)],
-                    capture_output=True, text=True, timeout=120,
-                )
-                if result.returncode == 0 and converted.exists():
-                    xls_path.unlink(missing_ok=True)
-                    return converted
-            except Exception as err:
-                logger.warning("Échec conversion LibreOffice: %s", err)
-
-        # 2. Option de secours Python native (pandas + xlrd + openpyxl)
-        try:
-            import pandas as _pd
-            sheets = _pd.read_excel(xls_path, sheet_name=None, engine="xlrd", header=None)
-            with _pd.ExcelWriter(converted, engine="openpyxl") as writer:
-                for sheet_name, df in sheets.items():
-                    df.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
-            xls_path.unlink(missing_ok=True)
-            return converted
-        except Exception as py_err:
-            logger.error("Échec conversion Python XLS: %s", py_err)
-
-        raise RuntimeError(
-            "Impossible de convertir le fichier .xls en .xlsx. "
-            "Veuillez soit installer LibreOffice, soit convertir votre fichier au format .xlsx dans Excel."
-        )
-
     def _save_uploads() -> None:
         for f in all_input_files:
             dest = config.INPUT_DIR / f.name
             dest.write_bytes(f.getbuffer())
-            if dest.suffix.lower() == ".xls":
-                _convert_xls_to_xlsx(dest)
         template_dest = config.TEMPLATE_DIR / template_file.name
         template_dest.write_bytes(template_file.getbuffer())
-        if template_dest.suffix.lower() == ".xls":
-            _convert_xls_to_xlsx(template_dest)
 
     if run_clicked:
         for key in ["last_tpfrep_path", "last_dashboard_path", "last_kpi", "last_merged"]:
