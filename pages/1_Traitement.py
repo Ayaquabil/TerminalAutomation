@@ -233,21 +233,38 @@ with tab_pipeline:
 
     def _convert_xls_to_xlsx(xls_path: Path) -> Path:
         import shutil as _shutil
-        exe = next((c for c in ("libreoffice", "soffice") if _shutil.which(c)), None)
-        if not exe:
-            raise RuntimeError("LibreOffice introuvable dans le PATH pour la conversion .xls.")
-        try:
-            result = subprocess.run(
-                [exe, "--headless", "--norestore", "--convert-to", "xlsx", "--outdir", str(xls_path.parent), str(xls_path)],
-                capture_output=True, text=True, timeout=120,
-            )
-        except subprocess.TimeoutExpired:
-            raise RuntimeError("Timeout dépassé lors de la conversion .xls.")
         converted = xls_path.with_suffix(".xlsx")
-        if result.returncode != 0 or not converted.exists():
-            raise RuntimeError("Échec de la conversion.")
-        xls_path.unlink(missing_ok=True)
-        return converted
+        
+        # 1. Option LibreOffice / soffice si disponible
+        exe = next((c for c in ("libreoffice", "soffice") if _shutil.which(c)), None)
+        if exe:
+            try:
+                result = subprocess.run(
+                    [exe, "--headless", "--norestore", "--convert-to", "xlsx", "--outdir", str(xls_path.parent), str(xls_path)],
+                    capture_output=True, text=True, timeout=120,
+                )
+                if result.returncode == 0 and converted.exists():
+                    xls_path.unlink(missing_ok=True)
+                    return converted
+            except Exception as err:
+                logger.warning("Échec conversion LibreOffice: %s", err)
+
+        # 2. Option de secours Python native (pandas + xlrd + openpyxl)
+        try:
+            import pandas as _pd
+            sheets = _pd.read_excel(xls_path, sheet_name=None, engine="xlrd", header=None)
+            with _pd.ExcelWriter(converted, engine="openpyxl") as writer:
+                for sheet_name, df in sheets.items():
+                    df.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
+            xls_path.unlink(missing_ok=True)
+            return converted
+        except Exception as py_err:
+            logger.error("Échec conversion Python XLS: %s", py_err)
+
+        raise RuntimeError(
+            "Impossible de convertir le fichier .xls en .xlsx. "
+            "Veuillez soit installer LibreOffice, soit convertir votre fichier au format .xlsx dans Excel."
+        )
 
     def _save_uploads() -> None:
         for f in all_input_files:
