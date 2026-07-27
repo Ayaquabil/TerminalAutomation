@@ -220,3 +220,4 @@ leur nom (content_detection).
 Pour un diagnostic complet, consultez `logs/application.log`, qui
 journalise chaque étape (import, validation, nettoyage, fusion, calculs,
 génération) avec le détail des cellules écrites ou ignorées.
+# TerminalAutomation-
