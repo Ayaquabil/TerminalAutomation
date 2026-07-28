@@ -13,7 +13,7 @@ _LOGO_PATH = Path(__file__).parent.parent / "assets" / "somaport_logo.png"
 def top_navbar(current_page_path: str = "") -> None:
     """
     Affiche une barre de navigation horizontale professionnelle et fixe en haut de la page.
-    Masque complètement la sidebar native et les entêtes de Streamlit.
+    Masque complètement la sidebar native et les entêtes de Streamlit, avec support mobile.
     """
     # Encodage du logo en base64 pour un rendu immédiat et sans requêtes HTTP externes
     if _LOGO_PATH.exists():
@@ -31,7 +31,6 @@ def top_navbar(current_page_path: str = "") -> None:
         {"path": "traitement", "label": "Traitement"},
         {"path": "dashboard", "label": "Dashboard BI"},
         {"path": "historique", "label": "Historique"},
-        
     ]
 
     # Normalisation du chemin courant
@@ -83,7 +82,7 @@ def top_navbar(current_page_path: str = "") -> None:
         width: 100% !important;
     }}
     
-    /* Ajustement de la zone de contenu sous la navbar fixe */
+    /* Ajustement de la zone de contenu sous la navbar fixe (Desktop) */
     .main .block-container {{
         padding: 5.5rem 2.5rem 2.5rem 2.5rem !important;
         max-width: 1400px !important;
@@ -173,33 +172,65 @@ def top_navbar(current_page_path: str = "") -> None:
         background-color: {COLORS['accent_light']};
     }}
     
-    .smp-nav-icon {{
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-    }}
-    
-    .smp-nav-label {{
-        letter-spacing: 0.01em;
-    }}
-    
     .smp-navbar-right {{
         display: flex;
         align-items: center;
     }}
-    
-    .smp-navbar-tag {{
-        font-family: 'Onest', sans-serif;
-        font-size: 0.72rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        background: {COLORS['accent_light']};
-        color: {COLORS['accent']};
-        padding: 0.35rem 0.85rem;
-        border-radius: 20px;
-        border: 1px solid {COLORS['border_glass']};
-        box-shadow: 0 2px 6px rgba(139, 179, 70, 0.06);
+
+    /* ── RESPONSIVE MOBILE (< 768px) ── */
+    @media screen and (max-width: 768px) {{
+        .smp-top-navbar {{
+            flex-direction: column;
+            height: auto;
+            padding: 0;
+            justify-content: center;
+        }}
+        
+        .smp-navbar-left {{
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem 0 0.25rem 0;
+            gap: 0;
+        }}
+        
+        .smp-navbar-logo {{
+            height: 38px;
+        }}
+        
+        .smp-navbar-logo img {{
+            height: 38px;
+        }}
+        
+        .smp-navbar-right {{
+            width: 100%;
+            overflow-x: auto;
+            /* Permet un défilement fluide au doigt sur iOS/Android */
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; /* Masque la scrollbar sur Firefox */
+        }}
+        
+        /* Masque la scrollbar sur Chrome/Safari pour un look clean */
+        .smp-navbar-right::-webkit-scrollbar {{
+            display: none; 
+        }}
+        
+        .smp-navbar-menu {{
+            width: max-content;
+            padding: 0 1rem;
+            margin: 0 auto;
+            gap: 0.25rem;
+        }}
+        
+        .smp-nav-link {{
+            height: 48px;
+            padding: 0 0.85rem;
+            font-size: 0.85rem;
+        }}
+        
+        /* Ajustement de la zone de contenu car la navbar mobile est plus haute */
+        .main .block-container {{
+            padding: 6.5rem 1rem 1.5rem 1rem !important;
+        }}
     }}
     </style>
     
@@ -208,7 +239,6 @@ def top_navbar(current_page_path: str = "") -> None:
             <div class="smp-navbar-logo">
                 {logo_html}
             </div>
-         
         </div>
         <div class="smp-navbar-right">
                <div class="smp-navbar-menu">

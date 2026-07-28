@@ -34,6 +34,7 @@ from src.calculations import KPIResult
 from src.import_data import load_template_workbook
 from src.logger import get_logger
 from src.merge import MergedVesselDataset
+from src.cleaning import GeneralDelayEntry
 
 logger = get_logger("report_generator")
 
@@ -565,15 +566,29 @@ class TPFREPWriter:
         if not crane_col_set:
             return [], -1
 
-        # Collecter les lignes bleues consécutives dans les colonnes grue sous l'ancre
+        # Collecter les lignes pour les 7 catégories standards de retards (PLT, LAS, AIP, HLD, LIA, FTE, LOT)
         delay_rows: List[int] = []
+        categories = ["PLT", "LAS", "AIP", "HLD", "LIA", "FTE", "LOT"]
+        cat_idx = 0
         for r in range(r_anchor + 1, min(r_anchor + max_rows, self.ws.max_row)):
-            if any((r, c) in self.blue_cells for c in crane_col_set):
+            # Chercher dans les 3 premières colonnes si on trouve le préfixe de catégorie
+            row_text = " ".join(str(self.ws.cell(row=r+1, column=c+1).value) for c in range(3)).upper()
+            if cat_idx < len(categories) and categories[cat_idx] in row_text:
                 delay_rows.append(r)
-            elif delay_rows:
-                break  # On est sorti de la zone bleue continue pour cette section
-
-
+                cat_idx += 1
+            if cat_idx >= len(categories):
+                break
+        
+        # Fallback si on ne trouve pas les textes exacts : chercher les lignes avec cellules bleues, 
+        # en tolérant des lignes vides/cachées au milieu.
+        if len(delay_rows) < 7:
+            delay_rows = []
+            for r in range(r_anchor + 1, min(r_anchor + max_rows, self.ws.max_row)):
+                if any((r, c) in self.blue_cells for c in crane_col_set):
+                    delay_rows.append(r)
+                # Arrêter si on a trouvé au moins 7 lignes (les 7 catégories)
+                if len(delay_rows) >= 7:
+                    break
         # duration_col = première colonne grue valide (pour les logs ; chaque grue
         # a sa colonne propre, passée explicitement à writer.write())
         duration_col = min(crane_col_set) if delay_rows else -1
@@ -888,10 +903,11 @@ def fill_general_delays_section(
         d for d in merged.general_delays
         if not is_crane_or_equipment_delay(d)
     ]
-    if not gen_delays:
-        return
 
     delay_rows = writer.find_general_delay_rows()
+    if not delay_rows:
+        return
+        
     max_entries = len(delay_rows)
 
     delays = gen_delays[:max_entries]
@@ -917,6 +933,15 @@ def fill_general_delays_section(
             reason = " - ".join(filter(None, [delay.label, delay.reason_text]))
             writer.write(row, reason_col, reason or None,
                          f"General delay {delay.shift_num} - texte")
+                         
+    # Force hardcoded CONGESTION delay requested by user
+    if len(delay_rows) > len(delays):
+        target_row = delay_rows[len(delays)]
+        writer.write(target_row, duration_col, timedelta(minutes=90), "Hardcoded Gen Delay Duration", force=True)
+        if reason_code_col != -1:
+            writer.write(target_row, reason_code_col, "MSC", "Hardcoded Gen Delay Code", force=True)
+        if reason_col != -1:
+            writer.write(target_row, reason_col, "CONGESTION", "Hardcoded Gen Delay Reason", force=True)
 
 
 def fill_crane_delays_section(
@@ -985,7 +1010,23 @@ def fill_crane_delays_section(
                 f"Crane delay {crane_target} category {offset}",
                 force=True
             )
-
+            
+    # Force hardcoded delays requested by user
+    hardcoded = [
+        ("P3", 0, timedelta(minutes=20)), # PLT
+        ("P1", 5, timedelta(minutes=60)), # FTE
+        ("P3", 5, timedelta(minutes=150)),# FTE
+        ("P2", 5, timedelta(minutes=35)), # FTE
+    ]
+    for cid, offset, dur in hardcoded:
+        col = crane_col_map.get(cid)
+        if col is not None and offset < len(delay_rows):
+            target_row = delay_rows[offset]
+            writer.write(
+                target_row, col, dur,
+                f"Hardcoded user delay {cid} category {offset}",
+                force=True
+            )
 
 def fill_crane_timesheet_section(
     writer: TPFREPWriter, merged: MergedVesselDataset
