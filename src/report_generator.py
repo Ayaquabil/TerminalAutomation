@@ -778,7 +778,7 @@ def fill_identification_section(
     primary_operator = operators[0] if operators else config.VESSEL_IMO_DEFAULT
 
     # 1. Vessel Name (D8)
-    vessel_name_val = getattr(config, 'TARGET_VESSEL_NAME', None) or merged.vessel_name
+    vessel_name_val = merged.vessel_name or getattr(config, 'TARGET_VESSEL_NAME', None)
     if vessel_name_val:
         writer.write_cell_by_coord("D8", vessel_name_val, "Vessel Name")
 

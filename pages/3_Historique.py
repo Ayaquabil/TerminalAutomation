@@ -13,9 +13,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-# Force reload of ui_theme
-if "src.ui_theme" in sys.modules:
-    importlib.reload(sys.modules["src.ui_theme"])
+# Force reload of modules to prevent Streamlit caching old module versions in memory
+for _mod in ["config", "src.database", "src.ui_theme"]:
+    if _mod in sys.modules:
+        importlib.reload(sys.modules[_mod])
 
 import config
 from src.database import HistoryDB
@@ -129,8 +130,8 @@ if len(entries) >= 2:
         if not isinstance(name, str):
             return "—"
         n = name.strip().upper().replace(" ", "")
-        if n in ("MASTERYD", "MASTERYD", "MASTERY"):
-            return "MASTERY D"
+        if n in ("MASTERYD", "MASTERY"):
+            return "MASTERYD"
         return name.strip()
 
     df_plot["vessel_norm"] = df_plot["vessel_name"].apply(_normalize_vessel)
@@ -446,3 +447,14 @@ if id_options:
                 f'</div>'
             )
             st.markdown(files_html, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button(f"🗑️ Supprimer l'entrée #{selected_id} de l'historique", type="secondary"):
+            if hasattr(db, 'delete_entry'):
+                db.delete_entry(selected_id)
+            else:
+                with db._connect() as conn:
+                    conn.execute("DELETE FROM processing_history WHERE id = ?", (selected_id,))
+            st.success(f"L'entrée #{selected_id} a été supprimée de la base de données.")
+            st.rerun()
+

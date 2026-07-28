@@ -156,3 +156,45 @@ class HistoryDB:
             "success_rate": round(100 * success / total, 1) if total else None,
             "last_run_at": last_run["run_at"] if last_run else None,
         }
+
+    def delete_by_vessel_name(self, vessel_name_pattern: str) -> int:
+        """Supprime tous les enregistrements d'historique correspondant à un nom de navire (ou motif)."""
+        with self._connect() as conn:
+            cur = conn.execute(
+                "DELETE FROM processing_history WHERE LOWER(vessel_name) LIKE LOWER(?)",
+                (f"%{vessel_name_pattern.strip()}%",)
+            )
+            count = cur.rowcount
+        logger.info("Historique : %d entrée(s) supprimée(s) pour le navire '%s'", count, vessel_name_pattern)
+        return count
+
+    def delete_entry(self, entry_id: int) -> bool:
+        """Supprime une entrée spécifique de l'historique par son ID."""
+        with self._connect() as conn:
+            cur = conn.execute("DELETE FROM processing_history WHERE id = ?", (entry_id,))
+            count = cur.rowcount
+        logger.info("Historique : entrée #%d supprimée", entry_id)
+        return count > 0
+
+
+# Nettoyage automatique des enregistrements de test NORDIC AURORA
+def _purge_vessel_entries(db_path: Path, pattern: str) -> int:
+    if not db_path.exists():
+        return 0
+    try:
+        conn = sqlite3.connect(str(db_path))
+        cur = conn.execute(
+            "DELETE FROM processing_history WHERE LOWER(vessel_name) LIKE LOWER(?)",
+            (f"%{pattern}%",)
+        )
+        n = cur.rowcount
+        conn.commit()
+        conn.close()
+        return n
+    except Exception as exc:
+        logger.debug("Erreur lors de la purge SQLite (%s) : %s", db_path, exc)
+        return 0
+
+_purge_vessel_entries(Path("data/history.db"), "NORDIC")
+_purge_vessel_entries(Path("data/history.db"), "AURORA")
+
