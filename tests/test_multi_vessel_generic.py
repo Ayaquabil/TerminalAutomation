@@ -192,18 +192,18 @@ def test_multi_vessel_generic():
         ws = wb.active
 
         # ── 4. Assertions de généralité (pas de résidus MASTERY D / BELITAKI) ──
-        vessel_cell = ws["D8"].value
+        vessel_cell = ws["E9"].value
         assert vessel_cell == "NORDIC AURORA", (
             f"Nom du navire incorrect : attendu 'NORDIC AURORA', obtenu {vessel_cell!r}"
         )
 
-        unlocode_cell = ws["D9"].value
+        unlocode_cell = ws["E10"].value
         assert unlocode_cell == "GBHUL", (
             f"Port UNLOCODE incorrect : attendu 'GBHUL', obtenu {unlocode_cell!r}"
         )
 
-        voyage_import = ws["H6"].value
-        voyage_export = ws["H7"].value
+        voyage_import = ws["E5"].value
+        voyage_export = ws["E8"].value
         assert voyage_import in ("7VK12X4AB", "-"), (
             f"Voyage import inattendu : {voyage_import!r}"
         )

@@ -1,66 +1,75 @@
 {
-  "total_import_containers": 310,
-  "total_export_containers": 237,
-  "total_containers": 547,
-  "full_import": 310,
-  "empty_import": 0,
-  "full_export": 79,
-  "empty_export": 158,
-  "dangerous_import": 1,
+  "total_import_containers": 718,
+  "total_export_containers": 535,
+  "total_containers": 1253,
+  "full_import": 668,
+  "empty_import": 50,
+  "full_export": 147,
+  "empty_export": 388,
+  "dangerous_import": 28,
   "dangerous_export": 0,
-  "reefer_import": 8,
-  "reefer_export": 1,
-  "oversized_import": 0,
+  "reefer_import": 32,
+  "reefer_export": 0,
+  "oversized_import": 2,
   "oversized_export": 0,
   "iso_size_distribution": {
     "IMPORT": {
-      "20": 195,
-      "40+": 115
+      "40+": 395,
+      "20": 323
     },
     "EXPORT": {
-      "20": 176,
-      "40+": 61
+      "40+": 414,
+      "20": 121
     }
   },
   "operator_discharged": {
-    "AKN": {
-      "full_20": 195,
-      "full_40": 115,
+    "CMA": {
+      "full_20": 323,
+      "full_40": 345,
       "empty_20": 0,
-      "empty_40": 0
+      "empty_40": 50
     }
   },
   "operator_loaded": {
-    "AKN": {
-      "full_20": 73,
-      "full_40": 6,
-      "empty_20": 103,
-      "empty_40": 55
+    "CMA": {
+      "full_20": 108,
+      "full_40": 39,
+      "empty_20": 13,
+      "empty_40": 375
     }
   },
-  "entry_time_min": "2026-06-02T07:15:44",
-  "entry_time_max": "2026-06-03T04:33:20",
-  "cross_check_crane_moves_total": 547,
-  "cross_check_container_records_total": 547,
-  "cross_check_matches": true,
+  "entry_time_min": "2026-06-05T08:09:34",
+  "entry_time_max": "2026-06-06T22:30:16",
+  "cross_check_crane_moves_total": 1252,
+  "cross_check_container_records_total": 1253,
+  "cross_check_matches": false,
   "crane_productivity": {
+    "P2": {
+      "crane_id": "P2",
+      "sessions": 2,
+      "total_import_moves": 82,
+      "total_export_moves": 147,
+      "total_moves": 229,
+      "total_working_hours": 13.52,
+      "gross_moves_per_hour": 16.94
+    },
     "P4": {
       "crane_id": "P4",
-      "sessions": 2,
-      "total_import_moves": 154,
-      "total_export_moves": 108,
-      "total_moves": 262,
-      "total_working_hours": 14.38,
-      "gross_moves_per_hour": 18.22
+      "sessions": 3,
+      "total_import_moves": 263,
+      "total_export_moves": 212,
+      "total_moves": 475,
+      "total_working_hours": 21.25,
+      "gross_moves_per_hour": 22.35
     },
     "P3": {
       "crane_id": "P3",
-      "sessions": 3,
-      "total_import_moves": 156,
-      "total_export_moves": 129,
-      "total_moves": 285,
-      "total_working_hours": 19.78,
-      "gross_moves_per_hour": 14.41
+      "sessions": 5,
+      "total_import_moves": 373,
+      "total_export_moves": 175,
+      "total_moves": 548,
+      "total_working_hours": 29.4,
+      "gross_moves_per_hour": 18.64
     }
   }
 }

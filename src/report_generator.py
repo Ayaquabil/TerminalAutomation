@@ -765,7 +765,7 @@ class TPFREPWriter:
 def fill_identification_section(
     writer: TPFREPWriter, merged: MergedVesselDataset, kpi: Optional[KPIResult] = None
 ) -> None:
-    """Remplit l'en-tête et le Timesheet avec mappage explicite sur les cellules D6-D11, H6-H7 et D15-D22."""
+    """Remplit l'en-tête et le Timesheet de manière totalement dynamique par recherche de libellés."""
     def _get_operators(df) -> list:
         if "operator" not in df.columns or df.empty:
             return []
@@ -777,44 +777,44 @@ def fill_identification_section(
     )
     primary_operator = operators[0] if operators else config.VESSEL_IMO_DEFAULT
 
-    # 1. Vessel Name (D8)
+    # 1. Vessel Name
     vessel_name_val = merged.vessel_name or getattr(config, 'TARGET_VESSEL_NAME', None)
     if vessel_name_val:
-        writer.write_cell_by_coord("D8", vessel_name_val, "Vessel Name")
+        writer.write_near_anchor_synonyms(["Vessel Name", "Name of Vessel"], vessel_name_val, "Vessel Name")
 
-    # 2. Call Sign (D7) - fallback on '-'
+    # 2. Call Sign - fallback on '-'
     call_sign_val = getattr(merged, 'call_sign', None)
     if call_sign_val and str(call_sign_val).strip() not in ("", "None", "nan", "NaN", "UNKNOWN"):
-        writer.write_cell_by_coord("D7", call_sign_val, "Call Sign")
+        writer.write_near_anchor_synonyms(["Call Sign", "CallSign"], call_sign_val, "Call Sign")
     else:
-        writer.write_cell_by_coord("D7", "-", "Call Sign")
+        writer.write_near_anchor_synonyms(["Call Sign", "CallSign"], "-", "Call Sign")
 
-    # 3. IMO Number (D6) - fallback on '-'
+    # 3. IMO Number - fallback on '-'
     imo_val = getattr(merged, 'imo', None)
     if imo_val and str(imo_val).strip() not in ("", "None", "nan", "NaN", "UNKNOWN"):
-        writer.write_cell_by_coord("D6", imo_val, "IMO Number")
+        writer.write_near_anchor_synonyms(["IMO Number", "IMO No", "IMO"], imo_val, "IMO Number")
     else:
-        writer.write_cell_by_coord("D6", "-", "IMO Number")
+        writer.write_near_anchor_synonyms(["IMO Number", "IMO No", "IMO"], "-", "IMO Number")
 
-    # 4. Port UN/LOCODE (D9)
+    # 4. Port UN/LOCODE
     if config.VESSEL_PORT_UNLOCODE:
-        writer.write_cell_by_coord("D9", config.VESSEL_PORT_UNLOCODE, "Port UN/LOCODE")
+        writer.write_near_anchor_synonyms(["Port UN/LOCODE", "Port (UN Location Code)", "UN/LOCODE"], config.VESSEL_PORT_UNLOCODE, "Port UN/LOCODE")
 
-    # 5. Terminal Code (D10)
+    # 5. Terminal Code
     if config.TERMINAL_CODE:
-        writer.write_cell_by_coord("D10", config.TERMINAL_CODE, "Terminal Code")
+        writer.write_near_anchor_synonyms(["Terminal Code", "Terminal"], config.TERMINAL_CODE, "Terminal Code")
 
-    # 6. Vessel Operator (D11)
+    # 6. Vessel Operator
     if primary_operator and primary_operator != "-":
-        writer.write_cell_by_coord("D11", primary_operator, "Vessel Operator")
+        writer.write_near_anchor_synonyms(["Vessel Operator", "Operator"], primary_operator, "Vessel Operator")
 
     # Voyage numbers
     voyage_val = merged.voyage if merged.voyage else getattr(config, 'VOYAGE_IMPORT', "")
     if voyage_val:
-        writer.write_cell_by_coord("H6", voyage_val, "Voyage import")
-        writer.write_cell_by_coord("H7", voyage_val, "Voyage export")
+        writer.write_near_anchor_synonyms(["Voyage import", "Voyage # import"], voyage_val, "Voyage import")
+        writer.write_near_anchor_synonyms(["Voyage export", "Voyage # export"], voyage_val, "Voyage export")
 
-    # --- Section 1.1 Vessel Timesheet (Rows 15 to 22) ---
+    # --- Section 1.1 Vessel Timesheet ---
     all_commenced = [s.commenced for s_list in merged.crane_sessions.values() for s in s_list if s.commenced]
     all_completed = [s.completed for s_list in merged.crane_sessions.values() for s in s_list if s.completed]
 
@@ -848,21 +848,22 @@ def fill_identification_section(
         lashing_off_dt = last_lift + timedelta(minutes=79)
 
     if planned_arrival_dt:
-        writer.write_cell_by_coord("D15", planned_arrival_dt, "Planned Arrival Time")
+        writer.write_near_anchor("Planned Arrival Time", planned_arrival_dt, "Planned Arrival Time")
     if planned_departure_dt:
-        writer.write_cell_by_coord("D16", planned_departure_dt, "Planned Departure Time")
+        writer.write_near_anchor("Planned Departure Time", planned_departure_dt, "Planned Departure Time")
     if arrival_berth_dt:
-        writer.write_cell_by_coord("D17", arrival_berth_dt, "Arrival Berth")
+        writer.write_near_anchor("Arrival Berth", arrival_berth_dt, "Arrival Berth")
     if sailed_berth_dt:
-        writer.write_cell_by_coord("D18", sailed_berth_dt, "Sailed Berth")
+        writer.write_near_anchor("Sailed Berth", sailed_berth_dt, "Sailed Berth")
     if lashing_on_dt:
-        writer.write_cell_by_coord("D19", lashing_on_dt, "Lashing Gangs ON")
+        writer.write_near_anchor("Lashing Gangs ON", lashing_on_dt, "Lashing Gangs ON")
     if lashing_off_dt:
-        writer.write_cell_by_coord("D20", lashing_off_dt, "Lashing Gangs OFF")
+        writer.write_near_anchor("Lashing Gangs OFF", lashing_off_dt, "Lashing Gangs OFF")
     if first_lift:
-        writer.write_cell_by_coord("D21", first_lift, "First Crane Lift")
+        writer.write_near_anchor("First Crane Lift", first_lift, "First Crane Lift")
     if last_lift:
-        writer.write_cell_by_coord("D22", last_lift, "Last Crane Lift")
+        writer.write_near_anchor("Last Crane Lift", last_lift, "Last Crane Lift")
+
 
 
 def fill_general_delays_section(
@@ -1304,7 +1305,8 @@ def fill_hatch_cover_section(
     writer: TPFREPWriter, merged: MergedVesselDataset
 ) -> None:
     """Remplit la section 6 Hatch Cover Moves."""
-    total_hatch = sum(s.hatch_cover_open + s.hatch_cover_close for sessions in merged.crane_sessions.values() for s in sessions)
+    # Le template TPFREP exige des nombres pairs : "For one hatch cover move via pier report < 2 moves >"
+    total_hatch = sum(s.hatch_cover_open + s.hatch_cover_close for sessions in merged.crane_sessions.values() for s in sessions) * 2
 
     r_anchor, _ = writer.find_anchor_with_synonyms("hatch_cover_moves")
     if r_anchor == -1:
