@@ -40,7 +40,7 @@ st.markdown(
     hero_header(
         title="Traitement opérationnel",
         subtitle="Pipeline de traitement et génération des rapports d'escales TPFREP.",
-        chips=["Importation", "Validation", "Nettoyage & Fusion", "Rapports Excel & PDF"]
+        chips=["Importation", "Validation", "Nettoyage & Fusion", "Rapports Excel"]
     ),
     unsafe_allow_html=True,
 )
